@@ -1,0 +1,3 @@
+.DS_Store
+modules/
+.azure_docker_creds.env
