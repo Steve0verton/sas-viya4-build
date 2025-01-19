@@ -1,0 +1,14 @@
+# Run with the command: docker-compose up -d
+# After deployment is complete, connect through web browser using credentials below at http://localhost:8080
+
+version: '3.8'
+
+services:
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=XXXXXXXXXX
+      - PGADMIN_DEFAULT_PASSWORD=XXXXXXXXXX
+    ports:
+      - 8080:80
