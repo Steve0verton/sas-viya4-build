@@ -1,8 +1,8 @@
 # SAS Viya 4 Build
 
-Collection of content for SAS Viya 4 deployments in the cloud.  This project provides an umbrella-style collection of content which links to other public git repositories; as well as overlays, tools and additional instruction which is intended to provide a comprehensive approach to deploy a Viya 4 environment end to end.  This project is primarily designed for Microsoft Azure.  The public [SAS Github](https://github.com/sassoftware) is used for for cloud infrastructure (IAC) and the Viya 4 software deployment (DAC) processes.  Additional documentation is indexed and highlighted in the [SAS Github Documentation](#sas-public-github-documentation) below and recommended for additional reading.  **Every environment is different - mileage may vary.**
+Collection of content to enable SAS Viya 4 deployments in the cloud.  This project provides an umbrella-style collection of content which links to other public git repositories; as well as tools and additional instruction intended to provide a comprehensive approach to deploy a Viya 4 environment end to end.  This project is primarily designed for Microsoft Azure.  The public [SAS Github](https://github.com/sassoftware) is used for for cloud infrastructure (IAC) and the Viya 4 software deployment (DAC) processes.  Additional documentation is indexed and highlighted in the [SAS Github Documentation](#sas-public-github-documentation) below and recommended for additional reading.  **Every IT ecosystem is different - mileage may vary.**
 
-Viya 4 leverages a code-first mindset for architecture, deployment and ongoing administration.  Everything is deployed with code and command line processes, making this project git repository and dependent git repositories very important to understand.  Designing, developing and deploying cloud infrastructure and SAS software with a code-first mindset has a steep learning curve but well worth the time and effort in the long run because of the extremely scalable capability of rapid deployments over time using code, as well as increased visibility into exact steps performed during deployments because everything is managed via code.  Version control systems such as Github provide excellent ways to manage centrally and provide historical reference to prior versions. 
+Viya 4 leverages a code-first mindset for architecture, deployment and ongoing administration.  Everything is deployed with code and command line processes, making this project git repository and dependent git repositories very important to understand.  Designing, developing and deploying cloud infrastructure and SAS software with a code-first mindset has a steep learning curve but well worth the time and effort in the long run because of the extremely scalable capability of rapid deployments over time using code, as well as increased visibility into exact steps performed during deployments because everything is managed via code.  Version control systems such as Github provide excellent ways to manage centrally and provide historical reference to prior versions.
 
 For questions or support, create an Issue here in Github.
 
@@ -11,9 +11,9 @@ For questions or support, create an Issue here in Github.
 - [Project Directory Structure](#project-directory-structure)
 - [General Required Knowledge](#general-required-knowledge)
 - [Getting Started](#getting-started)
+- [Define Environment Naming Prefix](#define-environment-naming-prefix)
 - [Environment Configuration Code Organization](#environment-configuration-code-organization)
   - [Managing Environment IAC/DAC Deployment Configurations](#managing-environment-iacdac-deployment-configurations)
-  - [Define Environment Naming Prefix](#define-environment-naming-prefix)
   - [Define Deployment Directories for Environment](#define-deployment-directories-for-environment)
     - [Create Environment-Specific Configuration Directories from Scratch](#create-environment-specific-configuration-directories-from-scratch)
     - [Replicating an Environment](#replicating-an-environment)
@@ -37,7 +37,7 @@ The following list highlights critical upstream dependencies of this project rep
 ## Project Directory Structure
 
 * [docs](./docs) - Documentation for specific areas such as infrastructure, software and other useful administrative tasks
-* [modules](./modules) - Base code repositories initialized by the [init.sh](./init.sh) script.
+* **modules** - Base code repositories initialized by the [init.sh](./init.sh) script.
   * [/viya4-iac-azure](https://github.com/sassoftware/viya4-iac-azure) - Linked to [public SAS IAC Github](https://github.com/sassoftware/viya4-iac-azure)
   * [/viya4-deployment](https://github.com/sassoftware/viya4-deployment) - Linked to [public SAS DAC Github](https://github.com/sassoftware/viya4-deployment)
   * **{{LINKED REPO}}** - Organize additional externally linked project repositories here
@@ -80,17 +80,22 @@ The following instructions outline steps to deploy Viya 4.  Each step may link t
     # From this project repo root
     ./init.sh
     ```
-4. Organize code and setup environment-specific deployment code directories. Example steps are [provided below](#code-organization).
-   * [Determine an environment prefix name](#define-environment-naming-prefix) which will be referenced by directory structures, IAC and DAC code.
-     * Example: `dev-2022w20`
-5. Deploy Azure Cloud Infrastructure: [docs/azure-deployment.md](./docs/azure-deployment.md)
-6. Deploy SAS Viya 4 Software: [docs/viya4-deployment.md](./docs/viya4-deployment.md)
-7. Ongoing Administration:
+4. [Determine an environment prefix name](#define-environment-naming-prefix) which will be referenced by directory structures, IAC and DAC code. This prefix name is important because it perpetuates throughout everything.
+    * Example: `dev-2022w20`
+5. Organize code and setup environment-specific deployment code directories to work from. Example steps are [provided below](#code-organization).
+   * **Tip:** Build internal git repositories to manage environment-specific code.
+6. Deploy Azure Cloud Infrastructure: [docs/azure-deployment.md](./docs/azure-deployment.md). Work from environment-specific deployment directory.
+7. Deploy SAS Viya 4 Software: [docs/viya4-deployment.md](./docs/viya4-deployment.md). Work from environment-specific deployment directory.
+8. Ongoing Administration:
    * Using Kubernetes: [docs/kubernetes.md](./docs/kubernetes.md)
+
+## Define Environment Naming Prefix
+
+Environments are identified by a unique prefix or mnemonic name such as `dev-2022w20`.  **It is important to define a unique name** for referencing code, directories, filenames and the environment itself.  This mnemonic name is assimilated in many places during and after the deployment. This prefix name could be something that focuses on the purpose of the environment or follows organizational naming standard.
 
 ## Environment Configuration Code Organization
 
-Code used to deploy specific environments is maintained in a separate directory managed **separately** from this git project repository.  Code within **this** project repository is used to document and guide the code and configuration within the environment-specific deployment directories.  Environment-specific deployment code is conceptually grouped by [Infrastructure-as-code (IAC)](https://docs.microsoft.com/en-us/devops/deliver/what-is-infrastructure-as-code) or [Deployment-as-code (DAC)](https://octopus.com/docs/deployments/patterns/deployment-process-as-code). IAC builds the cloud infrastructure used to run Viya 4 while DAC deploys the software components and relevant configuration of SAS Viya software.  Organizing deployments is useful for leveraging prior success for future environment builds by memorializing environment configuration, code, dependencies and deployment process files.  
+Code used to deploy specific environments is maintained in a separate directory managed **separately from this git project repository.**  Code within **this** project repository is used to document and guide the code and configuration within the environment-specific deployment directories.  Environment-specific deployment code is conceptually grouped by [Infrastructure-as-code (IAC)](https://docs.microsoft.com/en-us/devops/deliver/what-is-infrastructure-as-code) or [Deployment-as-code (DAC)](https://octopus.com/docs/deployments/patterns/deployment-process-as-code). IAC builds the cloud infrastructure used to run Viya 4 while DAC deploys the software components and relevant configuration of SAS Viya software.  Organizing deployments is useful for leveraging prior success for future environment builds by memorializing environment configuration, code, dependencies and deployment process files.  
 
 ### Managing Environment IAC/DAC Deployment Configurations
 
@@ -100,15 +105,11 @@ A **deployments** directory is useful for organizing environment-specific IAC/DA
 # Establish a place for git repositories which manages environment-specific configuration code
 mkdir -p ~/dev/deployments
 cd ~/dev/deployments
-git clone {{YOUR_IAC_REPO}}
-git clone {{YOUR_DAC_REPO}}
+git clone {{YOUR_IAC_CONFIG_REPO}}
+git clone {{YOUR_DAC_CONFIG_REPO}}
 ```
 
 Environment-specific git repositories should be setup within the `deployments` directory created.  Configuration code is best managed through git to ensure version control and provide a mechanism for collaboration. Setup git repositories within your own corporate ecosystem and follow necessary guidelines for managing your own git repositories.  A single git repository could be created to manage all environment-specific code, or separate git repositories can be used to manage IAC versus DAC code separately based on internal security requirements.  
-
-### Define Environment Naming Prefix
-
-Use the following steps to setup a new environment within a separate **deployments** directory.  Environments are identified by a unique prefix or mnemonic name such as `dev-2022w20`.  **It is important to define a unique name** for referencing code, directories, filenames and the environment itself.  This mnemonic name is assimilated in many places during and after the deployment.
 
 ### Define Deployment Directories for Environment
 
