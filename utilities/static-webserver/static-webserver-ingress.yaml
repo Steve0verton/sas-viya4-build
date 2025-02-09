@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: static-webserver-ingress
+  namespace: static-webserver
+  annotations:
+    kubernetes.io/ingress.class: "nginx"  # Ensured to active controller
+    nginx.ingress.kubernetes.io/rewrite-target: /  # Fixes path issues
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - example.com
+    - "*.example.com"
+    secretName: ingress-nginx-admission
+  rules:
+  - host: example.com
+    http:
+      paths:
+      - path: /static/
+        pathType: Prefix
+        backend:
+          service:
+            name: static-webserver-service
+            port:
+              number: 8080

@@ -1,0 +1,9 @@
+---
+namespace: static-webserver
+kind: Kustomization
+resources:
+  - static-webserver-ns.yaml
+  - static-webserver-deployment.yaml
+  - static-webserver-ingress.yaml
+  - static-webserver-service.yaml
+  - static-webserver-config.yaml

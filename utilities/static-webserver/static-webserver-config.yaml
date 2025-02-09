@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: static-webserver-content
+  namespace: static-webserver
+data:
+  index.html: |
+    <html>
+    <body><p>TESTING</p></body>
+    </html>
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: static-webserver-nginx-config
+  namespace: static-webserver
+data:
+  default.conf: |
+    server {
+        listen 8080;
+        server_name example.com;
+    }
