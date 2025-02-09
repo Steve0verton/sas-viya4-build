@@ -1,0 +1,7 @@
+---
+namespace: nvme-mount
+kind: Kustomization
+resources:
+  - nvme-mount-ns.yaml
+  - nvme-mount-entrypoint.yaml
+  - nvme-mount-daemon.yaml

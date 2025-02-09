@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nvme-mount
+  namespace: nvme-mount
+  labels:
+    app: nvme-mount
+spec:
+  selector:
+    matchLabels:
+      name: nvme-mount
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        name: nvme-mount
+        app: nvme-mount
+    spec:
+      volumes:
+        - name: root-mount
+          hostPath:
+            path: /
+        - name: entrypoint
+          configMap:
+            name: entrypoint
+            defaultMode: 0744
+      nodeSelector:
+        kubernetes.io/os: linux
+      tolerations:
+        - key: workload.sas.com/class
+          operator: Equal
+          value: compute
+          effect: NoSchedule
+        - key: workload.sas.com/class
+          operator: Equal
+          value: connect
+          effect: NoSchedule
+        - key: workload.sas.com/class
+          operator: Equal
+          value: cas
+          effect: NoSchedule
+      restartPolicy: Always
+      priorityClassName: system-node-critical
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.azure.com/mode
+                operator: NotIn
+                values:
+                - system
+              matchFields: []
+      containers:  # Placeholder container
+        - name: pause-forever
+          image: "gcr.io/google-containers/pause:2.0"
+      initContainers:
+      - name: nvme-config
+        image: ubuntu:latest
+        securityContext:
+          privileged: true
+        command: ["bin/sh", "/init/entrypoint.sh"]
+        volumeMounts:
+          - name: entrypoint
+            mountPath: /init/
+          - name: root-mount
+            mountPath: /rootmnt
+            mountPropagation: "Bidirectional"
+        env:
+        - name: ROOT_MOUNT_DIR
+          value: /rootmnt
+        - name: SASTMP
+          value: sastmp

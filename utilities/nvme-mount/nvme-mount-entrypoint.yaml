@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: entrypoint
+  namespace: nvme-mount
+  labels:
+    app: nvme-mount
+data:
+  entrypoint.sh: |
+    #!/bin/sh
+    set -e
+
+    # apt-get update
+    # apt-get install -y xfsprogs nvme-cli
+
+    MOUNT_POINT=${ROOT_MOUNT_DIR:-/rootmnt}
+    NVME_DEVICE=$(lsblk -ndo NAME,TYPE | grep disk | grep nvme | awk '{print "/dev/"$1}' | head -n 1)
+
+    if [ -z "$NVME_DEVICE" ]; then
+      echo "ERROR: No NVMe device found. Exiting."
+      exit 1
+    fi
+
+    echo "===== NVMe device detected: $NVME_DEVICE"
+
+    # Check if device is already mounted
+    if mount | grep -q "${MOUNT_POINT}/nvme/${SASTMP}"; then
+        echo "===== NOTE: NVMe disk is already mounted at $MOUNT_POINT. Skipping mount."
+        mount | grep -E ' ext4 | xfs '
+        exit 0
+    fi
+
+    # Check if the device has a filesystem
+    if blkid "$NVME_DEVICE"; then
+        echo "===== NOTE: Filesystem detected on $NVME_DEVICE. Skipping format."
+    else
+        echo "===== No filesystem detected. Formatting $NVME_DEVICE ..."
+        mkfs.ext4 $NVME_DEVICE
+    fi
+    
+    # Create directory structures and mount NVMe disk
+    UUID=$(blkid -s UUID -o value $NVME_DEVICE)
+    mkdir -p ${MOUNT_POINT}/nvme/${SASTMP}
+
+    echo "===== Current Filesystem Mounts ====="
+    mount | grep -E ' ext4 | xfs '
+
+    mount ${NVME_DEVICE} ${MOUNT_POINT}/nvme/${SASTMP}
+    
+    echo "===== Device $NVME_DEVICE has been mounted to ${MOUNT_POINT}/nvme/${SASTMP}"
+    echo "NOTE: ${MOUNT_POINT}/nvme/${SASTMP} should exist inside the pod"
+    echo "== ${MOUNT_POINT}/nvme/${SASTMP} Disk Space:"
+    df -h ${MOUNT_POINT}/nvme/${SASTMP}
+    echo "== ${MOUNT_POINT}/nvme/${SASTMP} Contents:"
+    ls -alr ${MOUNT_POINT}/nvme/${SASTMP}
+
+    echo "===== Setup expected directories for SAS Viya 4"
+    rm -rf ${MOUNT_POINT}/nvme/${SASTMP}/*
+    mkdir -p ${MOUNT_POINT}/nvme/${SASTMP}/cdc
+    mkdir -p ${MOUNT_POINT}/nvme/${SASTMP}/saswork
+    chmod -R 777 ${MOUNT_POINT}/nvme/${SASTMP}/
+
+    echo "===== Final Directory Structure:"
+    ls -alR ${MOUNT_POINT}/nvme/
+
+    # Persist in fstab
+    if ! grep -q ${MOUNT_POINT}/nvme/${SASTMP} /etc/fstab; then
+      echo "$NVME_DEVICE ${MOUNT_POINT}/nvme/${SASTMP} ext4 defaults,noatime,nodiscard,nobarrier 0 2" >> /etc/fstab
+    fi
+
+    echo "===== Final Mount Configuration:"
+    mount | grep -E ' ext4 | xfs '
+
+    echo "===== NVMe disk mounted successfully."
